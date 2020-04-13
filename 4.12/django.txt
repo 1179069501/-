@@ -1,0 +1,98 @@
+web 应用程序处理流程
+前段客户端(浏览器,app,ajax,爬虫程序)->http请求->
+服务器程序(后端服务器)->接收http请求报文->解析http请求报文->框架程序(后端服务器)
+->http请求对象(request)->中间层处理->具体处理业务->中间层处理->http相应对象(response)
+->服务器程序(后端服务器)->构造http响应报文->返回http响应报文->http响应->前段客户端
+
+
+#Django的主要目的是简便,快速的开发数据库驱动的网站
+#django是一个重量级的框架,本身提供了很多功能,不用安装插件也能够实现
+# MVC的荷香思想是分工,解耦.
+# M表示Model,主要封装对数据库层的访问,对数据库中的数据进行增,删,改,查操作
+# V表示View,用于封装结果,生成页面展示html内容
+# C表示Controller,用于接收请求,处理业务逻辑,与Model和View交互,返回结果
+MVT
+M表示model,与MVC中M功能相同,负责和数据库交互,进行数据处理
+V表示view,与MVC中的C功能相同,接收请求,进行业务处理,返回应答
+T表示Template,与MVC中的V功能相同,负责封装构造返回的html
+
+
+# 创建虚拟环境:mkvirtualenv django_env -p python3
+# 安装Django:pip install django==2.2.5
+# 虚拟环境相关命令和匹配相关命令
+#虚拟环境
+mkvirtualenv #创建虚拟环境
+rmvirtualenv # 删除虚拟环境
+workon # 进入虚拟环境,查看所有虚拟环境
+deactivate #退出虚拟环境
+
+#pip
+pip install #安装依赖包
+pip uninstall #卸载依赖包
+pip list # 查看已安装的依赖库
+
+
+创建工程
+创建
+django_admin startproject 工程名称
+#将目录切换到code中
+cd code
+#调用django项目生成命令,生成项目:
+django_admin startproject demo
+
+工程目录说明
+各个文件的作用:
+与项目同名的目录
+settings.py是项目的整体配置文件
+urls.py是项目的url配置文件
+wsgl.py是项目与wsgi兼容的web服务器入口
+manage.py是项目管理文件,通过它管理项目
+使用开发服务器,运行项目
+运行命令
+python manage.py runserver
+python manage.py runserver IP地址:端口
+查看运行效果:
+在浏览器中输入网址"127.0.0.1:8000"便可看到效果
+django默认工作在调试debug模式下,如果增加,修改,删除文件,服务器会自动重启
+按ctrl+C停止服务器
+
+可以使用which Python命令,在虚拟环中查找Python的位置
+
+
+
+创建子应用
+创建
+Python manage.py startapp 子应用名称
+    python :python3解释器
+    manage.py:上一章创建项目工程的时候,生成的管理整个项目的文件
+    startapp:创建子应用的指令
+    子应用名称:这个名称可以自己随意指定,一般会根据项目需求来指定
+#进入项目的根目录中:
+cd ~/Desktop/code/demo
+#执行生成子应用的指令,生成一个叫users的字符串
+Python manage.py startapp users
+
+子应用目录说明
+    admin.py文件跟网站的后台管理站点配置相关
+    apps.py文件用于配置当前子应用的相关信息
+    migrations目录用于存放数据库迁移历史文件
+    models.py文件用户保存数据库模型类
+    tests.py文件用于开发测试用例,编写单元测试
+    views.py文件用于编写web应用视图
+配置子应用
+将刚创建的users子应用中的apps.py文件信息(users.apps.UsersConfig),添加到INSTALLED_APPS中
+
+创建视图
+创建
+打开刚创建的user模块,在views.py中编写视图代码
+#从django.http模块中导入HttpResponse
+from django.http import HttpResponse
+
+def index(request):
+    """
+    index 视图
+    :param request:包含了请求信息的请求对象
+    :return:相应对象
+    """
+    return HttpResponse("hello the world")
+
