@@ -1,0 +1,271 @@
+创建视图
+定义路由url
+1,在子应用中新建一个urls.py文件保存该应用的路由,一般我们把子应用的路由称为子路由
+2,在users.urls.py文件中定义子路由信息
+
+#从urls模块中导入re_path
+from django.conf.urls import re_path
+#从当前目录导入我们的视图模块views
+from . import views
+
+#urlpatterns 是被django自动识别的路由列表变量
+urlpatterns = [
+    #每个路由信息都需要使用url函数来构造
+    #url(路径,视图)
+    re_path(r'^index/$',views.index),
+]
+
+3,在工程总路由demo/urls.py中添加数据:
+#导入include函数
+from django.contrib import admin
+from django.conf.urls import url,include
+
+from django.contrib import admin
+from django.urls import path,include
+
+urlpatterns = [
+    #django默认就有的路由配置信息,第一行不用管
+    path('admin/',admin.site.urls),
+
+    #添加如下的路由配置信息:
+    path(r'users/',include('users.urls')),
+]
+使用include来将子应用users里的路由文件(urls.py)包含到工程总路由中
+r'^users/'决定了users子应用的所有路由都以/users开头,如我们刚定义的视图index,其最终的完整访问路径为/users/index/.这里可以不写总路由.例如:r",那么我们访问index的完整路径就是:/index/了
+
+4,启动运行
+重新启动django程序
+python manage.py runserver
+
+在浏览器输入网址http://127.0.0.1:8000/users/index/可以看到返回的信息
+
+
+配置文件
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+__file__:可以理解为当前的文件
+os.path.abspaht(文件):获取这个文件的绝对路径
+os.path.dirnam(路径):获取这个路径的上一级路径
+os.path.dirname(路径):再次获取这个路径的下一级路径
+这样获取到的BASE_DIR其实就是当前项目的根目录
+
+DEBUG
+设置是否为调试模式,创建工程后初始值为True,即默认工作在调试模式下
+作用:Django程序出现异常时,向前端显示详细的错误追踪信息
+如果为非调试模式:程序出错后,浏览器仅显示500的错误代码,不会显示具体的错误信息
+
+本地语言与时区
+出示话的工程默认语言和时区为英语和UTC标准时区
+LANGUAGE_CODE = "en-us"#语言
+TIME_ZONE = "UTC"#时区
+可以将语言和时区修改为中国大陆信息
+LANGUAGE_CODE = 'zh-hans'#中文
+TIME_ZONE = 'Asia/Shanghai' #亚洲上海时区
+
+路由说明
+url的了解:
+#第一种写法:http://www.itcast.cn:80/users/index/?a=1&b=2&c=3#box
+#第二种写法:http://www.itcast.cn:80/users/index/?a=1&b=2&c=3#box
+http:// 表示使用的协议
+www.itcast.cn 指的是访问的域名
+80 指的是调用的端口
+/users/index/ 指的是路由部分
+?a=1&b=2&c=3 指的是查询字符串
+#box 指的是锚点
+路由定义位置
+子路由:位于每个子应用下面的urls.py文件中
+总路由:位于项目的同名文件夹下的urls.py文件中
+路由执行顺序由上至下,有可能会使上面的路由屏蔽掉下面的路由
+urlpatterns = [
+    re_path(r'^say',views.say),
+    re_path(r'^sayhello',views.sayhello),
+]
+两种解决方法:
+1,调整书写顺序
+from django.conf.urls import re_path
+from . import views
+urlpatterns = [
+    re_path(r'^sayhellp',views.sayhello),
+    re_path(r'^say',views.say)
+]
+2,调整正则书写方式:
+from django.conf.urls import re_path
+from . import views
+urlpatterns = [
+    re_path(r'^say/$',views.say),
+    re_path(r'^sayhello/$',views.sayhello)
+]
+
+路由命名
+中路有文件中不用任何设置
+path(r'users/',include('users.urls')),
+子路由文件可以通过name书写指定子应用中某一条路径的名称
+from django.conf.urls import re_path
+from . import views
+app_name = "user"
+urlpatterns = [
+    re_path(r'^index/$',views.index,name='index'),
+    re_path(r'^say',views.say,name='say'),
+]
+
+Reverse反解析
+使用reverse函数,可以根据路由名称,返回具体的路径,入:
+from django.urls import Reverse #注意导报路径
+def index(request):
+    '''index函数'''
+    #我们在index函数中获取say函数的路径
+    url = Reverse('user:say')
+    print(url)  #/users/say
+    #获取本函数的路径
+    url1 = reverse('user:index')
+    print(url1) # /users/index
+    return HttpResponse("hello the world!")
+
+def say(request):
+    '''say函数'''
+    return HttpResponse('say')
+
+路径结尾斜线/的说明
+django中定义路由时,通常以斜线/结尾,起好处是用户访问不以斜线/结尾的相同路径时,django会把用户重定向到斜线/结尾的路径上,而不会返回404不存在
+urlpatterns = [
+    re_path(r'^index/$',views.index,name='index'),
+]
+用户访问index或者index/网址,均能访问到index视图.
+
+
+请求对象
+QueryDict对象
+QueryDict对象是django中一种特殊的字典
+里面可以存储一对一类型的数据,也可以存储一对多类型的数据
+这个对象一般用来存储浏览器传递过来的参数
+我们可以默认把他看成是一个字典
+但它和一般的字典的不同之处在于
+获取QueryDict终端数据
+一键一值:QueryDict这个字典可以调用get()函数来获取
+一键多值:QueryDict这个字典的获取方法:
+如果获取一个值:QueryDict.get(key)获取的是所有值的最后一个
+如果获取多个值:QueryDict.getlist(key)获取这个键对应的所有值,存放在列表中返回
+
+get():使用格式
+QueryDict.get("键")
+或者
+QueryDict['键']
+
+getlist():s使用格式
+QueryDict.getlist('键')
+
+前端传参的四种方式
+查询字符串传参
+获取查询字符串传递的参数
+可以通过request.GET属性获取,这个方法返回QueryDict对象
+//前端发送请求:
+$.ajax({
+    url:'http://127.0.0.1:8000/reqresp/qs/?a=1&b=2&a=3',
+    type:'get'
+    dataType:'json'
+})
+.done(function(data){
+    console.log(data)
+})
+.fail(function(error){
+    console.log(error)
+})
+
+#python部分接收发送的参数并打印:
+#视图函数
+def qs(request):
+    #获取查询字符串参数
+    a = request.GET.get('a')
+    b = request.GET.get('b')
+    alist = request.GET.getlist('a')
+    #打印
+    print(a)
+    print(b)
+    print(alist)
+    #返回响应对象
+    return HttpResponse('ok')
+
+路径传参
+未命名参数子路由:
+re_path(r'^weather/([a-z]+)/(\d{4})/$',view.weather)
+对应的视图部分
+def weather(request,city,year):
+    """定义weather函数,接收路径参数'''
+    print('city=%s'%city)
+    print('year=%s'%year)
+    return HttpResponse('ok')
+
+命名参数子路由:
+re_path(r'^weather/(?P<city>[a-z]+)/(?P<year>\d{4})/$',view.weather)
+对应的视图部分
+def weather(request,city,year):
+    """定义weather函数,接收路径参数'''
+    print('city=%s'%city)
+    print('year=%s'%year)
+    return HttpResponse('ok')
+
+请求体传参
+表单类型参数
+def get_body(request):
+    a = request.POST.get('a')
+    b = request.POST.get('b')
+    alist = request.POST.getlist('a')
+
+    print(a)
+    print(b)
+    print(alist)
+
+    return HttpResponse('ok')
+
+非标单类型传值方式
+获取方式:
+request.body#得到的是bytes类型数据
+#可以通过decode()函数,讲bytes装为str
+request.body.decode()
+#可以通过json.loads()函数吧str转为dict
+json.loads(request.body.decode())
+例如要获取请求体中的如下json数据{"a":1,"b":2}
+可以通过如下方法操作:
+import json
+def get_body_json(request):
+    json_bytes = request.body
+    json_str = json_bytes.decode()
+    dict = json.loads(json_str)
+    print(dict.get('a'))
+    print(dict.get('b'))
+    return HttpResponse('ok')
+
+请求对象中请求头信息
+def get_headers(request):
+    print(request.META['CONTENT_TYPE'])
+    return HttpResponse('ok')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
