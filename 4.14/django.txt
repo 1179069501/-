@@ -1,0 +1,251 @@
+响应
+HttpResponse
+导入方式:
+可以从django.http里面导入HttpResponse
+from django.http import HttpResponse
+定义形式:
+定义格式:
+HttpResponse(
+    content=响应体,
+    content_type=响应体数据类型,
+    status=状态码
+)
+content:表示返回内容
+status_code:返回的HTTP响应状态码
+content_type:指定返回数据的MIME类型
+例如:
+定义一个新的视图函数
+def demo_response(request):
+    str = '{"name":"python"}'
+    #返回一个HttpResponse响应对象
+    return HttpResponse(str,
+                        content_type="application/json",
+                        status=400)
+可以把HttpResponse对象当做字典进行响应头键值对的设置:
+#创建一个response对象
+response = HttpResponse()
+#在对象中添加一个新的键值对
+response['Itcast'] = 'Python'
+示例:
+from django.http import HttpResponse
+#常规用法:
+def demo_view(request):
+    return HttpResponse('itcast python',status=400)
+
+#或者想这样使用:
+def demo_view(request):
+    #创建一个response对象
+    response = HttpResponse('itcast python',status=400)
+
+    #在response对象中添加一个新的键值对
+    response['Itcast'] = 'python'
+
+    #返回response
+    return response
+
+HttpResponse的子类
+#导入方式:
+from django.http import HttpResponseNotFound
+子类有:
+HttpResponseRedirect 301
+HttpResponsePermanentRedirect 302
+HttpResponseNotModified 304
+HttpResponseBadResquest 400
+HttpResponseNotFound 404
+HttpResponseForbidden 403
+HttpresponseNotAllowed 405
+HttpResponseGone 410
+HttpResponseServerError 500
+使用:
+def getResponse(request):
+    return HttpResponseNotFound('<h1>404 error</h1>')
+
+JsonResponse类
+帮助我们将数据转换成json字符串
+设置享有content_type为application/json 
+使用:
+#导入JsonResponse
+from django.http import JsonResponse
+
+def demo_view(request):
+    #直接返回JsonResponse这个对象,并且里面可以直接传入dict参数
+    dict = {
+        'city':'beijing',
+        'subject':'python
+    }
+    return JsonResponse(dict)
+
+redirect重定向
+使用格式:
+redirect('想要跳转的路径')
+例如:
+from django.shortcuts import redirect 
+
+def demo_view1(request):
+    #第一种用法:直接在redirect函数中添加路由字符串
+    return redirect('/users/index/')
+
+def demo_view2(request):
+    #第二种用法:将reverse和redirect搭配使用
+    url = reverse('users:index')
+    return redirect(url)
+    
+Cookie
+Cookie以键值对key-value形式进行信息的存储
+Cookie基于域名安全,不同域名的Cookie是不能互相访问的
+设置Cookie
+使用方法
+#创建一个response对象
+response = HttpResponse()
+
+#调用对象的set_cookie()函数
+response.set_cookie(key,value,max_age)
+key:Cookie中保存信息的名称
+value:cookie中保存信息时,名称对应的值部分
+max_age:cookie中保存信息的有效期,超过有效期,key_value失效
+其中max_age单位为秒,默认为None,如果设置None值,则关闭浏览器失效
+例如:response.set_cookie('itcast','python',max_age=3600)
+
+读取Cookie
+#使用方法
+#其中request.COOKIES为字典类型
+value = request.COOKIES.get('key')
+例如value = request.COOKIES.get('itcast')
+
+Session
+Session的作用
+在服务器上保存用户的状态信息,以供前端页面访问
+因为数据保存在服务端,所有可以保存敏感信息,每次前端发送请求,可以随时获取对应的信息,保持回话状态
+Session的特点
+依赖cookies
+存储敏感,重要的信息,支持更多字节
+Session共享问题
+
+Session配置和存储
+启动Session
+Django项目默认启动Session
+可以在settings.py文件中查看
+MIDDLEWARE = [
+    'django.contrib.sessions.middleware.SessionMiddleware',
+]
+如需禁用,只需要注释即可
+
+存储方式
+数据库(默认存储方式)
+存储在数据库中,如下设置可以写,也可以不写
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+如果存储在数据库中,需要在项INSTALLED_APPS中安装Session应用
+INSTALLED_APPS = [
+    'django.contrib.sessions',
+]
+
+本地缓存
+存储在本机内存中,如果丢失则不能找回,比数据库的方式读写更快.
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+
+呼和存储
+优先从本机内存中存取,如果没有则从数据库中存取
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+
+Redis
+在redis中保存session,需要引入第三方扩展,我们可以使用django_redis来解决
+!,安装扩展
+pip install django-Redis
+2,配置
+在settings.py文件中做如下设置
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+Session操作
+1,往session中写入键值对:
+#使用格式:
+request.session['键']=值
+2,根据key读取session中的数据
+#使用格式
+value = request.session.get('键',默认值)
+3,清楚所有session,在存储中删除部分
+#使用格式:
+request.session.clear()
+4,清楚session数据,在存储中删除session的整条数据
+#使用格式:
+request.session.flush()
+5,删除session中的指定键及值,在存储中只删除某个键及对应的值.
+#使用格式:
+del request.session['键']
+6,设置session的有效期
+#使用格式:
+request.session.set_expiry(value)
+如果value是一个整数,session将在value秒没有活动后过期
+如果value为0,那么用户session的Cookie将在用户的浏览器关闭时过期.
+如果value为None,那么session有效期将采用系统默认值,默认为两周,可以通过在settings.py中设置SESSION_COOKIE_AGE来设置全局默认值
+
+类视图
+类视图引入
+在django中,以函数的方式定义的视图称为函数视图,也可用使用类来定义一个视图,称为类视图
+例如:
+def register(request):
+    """处理注册"""
+
+    #获取请求方法,判断是GET/POST请求
+    if request.method =='GET':
+        #处理GET请求,返回注册页面
+        return HttpResponse('get部分数据返回')
+    else:
+        #处理Post请求,实现注册逻辑
+        return HttpResponse('post部分数据返回')
+
+使用类视图可以将视图对应不同请求方式以类中的不同方法来区别定义
+from django.views.generic import view
+
+class RegisterView(View):
+    """类视图:处理注册"""
+
+    def get(self,request):
+        """处理GET请求,返回注册页面"""
+        print('RegisterView get')
+        return HttpResponse('RegisterView get 方法')
+    
+    def post(self,request):
+        """处理POST请求,实现注册逻辑"""
+        print('RegisterView post')'
+        return HttpResponse('RegisterVIew post方法')
+类视图的好处:
+代码可读性好
+类视图相对于函数视图有更高的复用性,如果其他地方需要用到某个视图的某个特定逻辑,直接继承该类视图即可
+
+类视图使用
+定义类视图需要继承自Django提供的父类View,可以使用from django.views.generic import View 或者 from django.views.generic.base import View导入
+注意:配置路由时,需要在类名后面增加as_view()函数
+urlpatterns = [
+    #视图函数:路由添加
+    #re_path(r'^register/$',views.register),
+    #类视图:路由添加
+    re_path(r'^register/$',views.RegisterView.as_view()),
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
