@@ -1,0 +1,362 @@
+类视图原理
+@classonlymethod 
+    '''省略代码'''
+    def view(cls,**initkwargs):
+        #这里的cls是as_view这个函数接收的第一个参数,也就是调用单签函数的类
+        #得到调用的类了之后,创建类的对象:self
+        self = cls(**initkwargs)
+        if hasattr(self,'get') and not hasattr(self,'head'):
+            self.head = self.get
+        #给当前这个类,添加对应的属性,如下图所示
+        self.request = request
+        self.args = args
+        self.kwargs = kwargs
+        #调用dispatch方法,按照不同请求方法调用不同请求方法
+        return self.dispatch(request,*args,**kwargs)
+
+    '''省略代码'''
+
+    #返回真正的函数视图
+    return view
+
+#dispatch 邦我们判断了前端发送的请求方法(get)是否在django的规定范围内,
+#如果在,则调用该方法
+def dispatch(self,request,*args,**kwargs):
+    #self.http_method_names 指的是我们的类视图中,对象方法的名字
+    #这里把所有方法的名字都存放在了http_methods_name中
+    #我们会把当前请求的方式转为小写,然后判断是否在列表中存在
+    if request.method.lower() in self.http_method_names:
+        #如果在里面,则进入这里
+        #这里的getattr作用是获取当前对象的属性
+        #下面的参数为:
+        #self:类视图对象
+        #request.method.lower():请求方法的小写,例如:'get'或'post'
+        #http_method_not)allowed:默认值,如果上面的值没有的话,把该值给handle
+        #项目代码的整体意思是:根据类视图对象,获取当前类视图中对应名称的方法
+        #如果获取到,则把方法返回给handle,否则不允许访问
+        handler = getattr(self,request.method.lower(),self.http_method_not_allowed)
+    else:
+        #如果类视图中没有的话,则进入这里,表名不允许进行请求
+        #我们会把不允许请求这个字段返回给handle
+        handler = self.http_method_not_allowed
+    #最终返回handle(handle里面要么包含可以访问的方法,要么就是不允许访问的字段)
+    return handle(request,*args,**kwargs)
+
+
+类视图使用装饰器
+
+通过路由,简洁添加装饰器
+我们定义的装饰器:
+def my_decorator(func):
+    def wrapper(request,*args,**kwargs):
+        print('自定义装饰器被调用了')
+        print('请求路径%s'%request.path)
+        return func(request,*args,**kwargs)
+    return wrapper
+
+#自定义的类视图
+class DemoView(View):
+    def get(self,request):
+        print('类视图中的get方法')
+        return HttpResponse('demoview get')
+
+    def post(self,request)
+        print('类视图中的post方法')
+        return HttpResponse('demoview post')
+
+在url配置,间接给函数增加装饰器
+urlpatterns= [
+    #类视图对应的子路由:
+    re_path(r'^demo/$',my_decorate(DemoView.as_view())
+]
+
+使用method_decorator将其装换为适用于类视图方法的装饰器
+from django.utils.decorators import method_decorator 
+
+#为特定请求方法添加装饰器
+class DemoView(View):
+
+    @method_decorator(my_decorator)#为get方法添加了装饰器
+    def get(self,request):
+        print('类视图中的get方法')
+        return HttpResponse('demoview get')
+
+    #method_decorator(my_decorator)#为post方法添加装饰器
+    def post(self,requset):
+        print('类视图中的post方法')
+        return HttpResponse('demoview post')
+
+    def put(self,request): #没有为put方法添加装饰器
+        print('类视图中的put方法')
+        return HttpResponse('demoview put')
+
+method_decorator装饰器使用name参数知名被装饰的方法
+#为特定请求方法添加装饰器
+#method_decorator(my_decorator,name = 'get')
+class DemoView(View):
+    def get(self,request)"
+        print('类视图中的get方法')
+        return HttpResponse('demoview get')
+
+    def post(self,request):
+        print('类视图中的post方法')
+        return HttpResponse('demoview post')
+
+#为全部请求方法添加装饰器
+@method_decorator(my_decorator,name='dispatch')
+class DemoView(View):
+    def get(self,request):
+        print('类视图中的get方法')
+        return HttpResponse('demoview get')
+
+    def post(self,request):
+        print('类视图中的post方法')
+        return HttpResponse('demoview post')
+
+类视图mixin扩展类
+Mixin扩展类的使用
+#我们自定义的装饰器
+def my_decorator_1(func):
+    def wrapper(request,*args,**kwargs):
+        print('自定义装饰器被调用了')
+        print('请求路径%s'%request.path)
+        return func(request,*args,**kwargs)
+    return wrapper
+
+#定义的Mixin扩展类:
+class FirstMixin(object):
+    #classonlymethod
+    def as_view(cls,*args,**kwargs):
+        view = super().as_view(*args,**kwargs)
+        view = my_decorator_1(view)
+        return view
+
+#定义的类视图,继承自:扩展类+view
+class DemoView(FirstMixin,View):
+    def get(self,request):
+        print('demoview get')
+        return HttpResponse('demoview get')
+
+    def post(self,request):
+        print('demoview post')
+        return HttpResponse('demoview post')
+
+多个Mixin扩展类连用:
+#我们自定义的装饰器:
+def my_decorator_1(func):
+    def wrapper(request,*args,**kwargs):
+        print('自定义装饰器被调用了')
+        print('请求路径%s'%request.path)
+        return func(request,*args,**kwargs)
+    return wrapper
+
+#我们自定义的装饰器
+def my_decorator_2(func):
+    def wrapper(request,*args,**kwargs):
+        print('自定义装饰器被调用了')
+        print('请求路径%s'%request.path)
+        return func(request,*args,**kwargs)
+    return wrapper
+
+class FirstMixin(object):
+    """FirstMixin扩展类"""
+    @classmethod
+    def as_view(cls,*args,**kwargs):
+        view = super().as_view(*args,**kwargs)
+        view = my_decorator_1(view)
+        return view
+
+class SecondMixin(object):
+    """SecondMixin扩展类"""
+    @classmethod
+    def as_view(cls,*args,**kwargs):
+        view = super().as_view(*args,**kwargs)
+        view = my_decorator_2(view)
+        return view
+
+class DemoView(FirstMixin,SecondMixin,View)
+    def get(self,request):
+        print('demoview get')
+        return HttpResponse('demoview get')
+
+    def post(self,request):
+        print('demoview post')
+        return HttpResponse('demoview post')
+
+中间件
+def simple_middleware(get_response):
+    #此处编写的代码仅在Django第一次配置和初始化执行一次
+    def middleware(request):
+        #慈湖编写的代码会在每个请求处理视图钱被调用
+        response = get_response(request)
+        #此处编写的代码会在每个请求处理视图之后被调用
+        return response
+
+    return middleware
+
+例如,在users应用中新建一个middleware.py文件
+def my_middleware(get_response):
+    print('init被调用')
+    def middleware(request):
+        print('before request 被调用')
+        response = get_response(request)
+        print('after response 被调用')
+        return response
+    return middleware
+定义好中间件后,需要在settings.py文件中添加注册中间件
+MIDDLEWARE = [
+    #添加中间件
+    'users.middleware.my_middleware',
+]
+定义一个驶入进程测试
+def demo_view(request):
+    print('view 视图被调用')
+    return HttpResponse('OK')
+
+多个中间件的执行顺序
+在请求视图被处理签,中间件由上至下一次进行
+在请求视图被处理后,中间件由下至上一次执行
+示例:
+定义两个中间件
+def my_middleware(get_response):
+    print('init被调用')
+    def middleware(request):
+        print('before request被调用')
+        response = get_response(request)
+        print('after response 被调用')
+        return response
+    return middleware
+
+def my_middleware2(get_response):
+    print('init2被调用')
+    def middleware(request):
+        print('before request2被调用')
+        response = get_response(request)
+        print('after response2被调用')
+        return response
+    return middleware
+
+注册添加两个中间件
+MIDDLEWARE = [
+    'user.middleware.my_middleware',
+    'user.middleware.my_middleware2',
+]
+
+
+Django自带模板的使用
+配置
+在工程中创建模板目录templates
+在settings.py配置文件中修改Templates配置项的DIRS值:
+#在此处拼接模板路径
+'DIRS':[os.path.join(BASE_DIT,'templates')],
+
+定义模板
+在templates目录中新建一个模板文件,如index.http
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html>
+
+渲染模板
+使用方式:
+render(request,'模板文件名称',添加给模板的数据)
+例如:
+from django.shortcuts import render
+
+def index(request):
+    #定义一个变量,拼接为字典格式;
+    context={'city':'北京'}
+    #返回render()函数
+    return render(request,'index.html',context)
+模板中也可以添加变量
+<!DOCTYPE THML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TItle</title>
+</head>
+<body>
+    <模板中可以定义变量>
+    <h1>({city})</h1>
+</body>
+</html>
+
+CSRF定义(跨站请求伪造)
+
+数据库映射
+ORM框架
+O是object,也就是类对象的意思
+R是relation,翻译是关系,也就是关系数据库中的数据表
+M是mapping,是映射
+在ORM框架中,他帮我们把雷和数据表进行了映射,可以让我们通过类和对象就能操作他所对应的表格数据
+ORM框架还有一个功能,它可以根据我们设计的类自动帮我们生产数据库的表格,
+django中内嵌了ORM框架,不需要直接面向数据库编程,而是定义模型类,通过模型类和对象完成数据表的增删改查操作
+使用django进行数据库开发的步骤
+1,配置数据库连接信息
+2,在models.py中定义模型类
+3,迁移
+4,通过模型类和对象完成数据表的增删改查操作
+
+数据库配置
+修改默认配置
+安装到虚拟环境中:
+pip install PyMySql
+在Django工程同名子目录的__init__.py文件中添加如下语句
+#从pymysql中导入函数
+from pymysql import install_as_MySQLdb
+#调用函数
+install_as_MySQLdb()
+作用是让Django的ORM能以mysqldb的方式来调用PyMySQL
+修改settings.py中的DATABASES:
+DATABASES = [
+    'default':{
+        'ENGINE':'django.db.backends.mysql',
+        'HOST':'127.0.0.1',#数据库主机
+        'PORT':3306, #数据库端口
+        'USER':'root', #数据库用户名
+        'PASSWORD':'mysql', #数据库用户密码
+        'NAME':'django_demo' #数据库名字
+    }
+]
+
+进入mysql,创建上面对应的库:django_demo
+#进入数据库:
+mysql -uroot -p
+
+#创建django_demo数据库
+mysql>create database django_demo default charset=utf8;
+
+Shell演示工具使用
+Shell演示工具
+通过如下命令进入shell
+python manage.py Shell
+
+导入两个模型类,以便后续使用
+from booktest.models import BookInfo.HeroInfo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
