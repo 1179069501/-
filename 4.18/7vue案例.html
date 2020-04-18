@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style type="text/css">
+		.list_con{
+			width:600px;
+			margin:50px auto 0;
+		}
+		.inputtxt{
+			width:550px;
+			height:30px;
+			border:1px solid #ccc;
+			padding:0px;
+			text-indent:10px;			
+		}
+		.inputbtn{
+			width:40px;
+			height:32px;
+			padding:0px;
+			border:1px solid #ccc;
+		}
+		.list{
+			margin:0;
+			padding:0;
+			list-style:none;
+			margin-top:20px;
+		}
+		.list li{
+			height:40px;
+			line-height:40px;
+			border-bottom:1px solid #ccc;
+		}
+
+		.list li span{
+			float:left;
+		}
+
+		.list li a{
+			float:right;
+			text-decoration:none;
+			margin:0 10px;
+		}
+	</style>
+    <!-- 导入 -->
+    <script src="./vue.js"></script>
+    <script>
+        window.onload = function(){
+            // 2,初始化
+            var vm = new Vue({
+                el:'#box', // element:元素
+                data:{
+                    inputValue:'',
+                    list:['学习html','学习css','学习javascript']
+                },
+                methods:{
+                    addFunc:function(){
+                        // 1,判断矿中是否有值
+                        if(thid.inputValue==''){
+                            // 2,如果没有值:alert给警告
+                            alert('输入框的值为空!!!')
+                            return
+                        }
+                        // 3,如果有值:增加一行
+                        this.list.pash(this.inputValue)
+
+                        // 4,删除输入框的值:
+                        this.inputValue = ''
+                        
+                    },
+                    deletefunc:function(index){
+                        // 删除点击行
+                        this.list.splice(index,1)
+
+                    },
+                    upfunc:function(index){
+                        if(index==0){
+                            alert('已经到顶了')
+                            return 
+
+                        }
+                        // 1,获取index对应的元素
+                        var title = this.list[index]
+                        // 2,删除index对应的元素
+                        this.list.splice(index,1)
+                        3,在index的前一个位置增加元素
+                        this.list.splice(index-1,0,title)
+                    },
+                    downfunc:function(index){
+                        if(this.list.length-1==index){
+                            alert('已经到底了')
+                            return
+                        }
+                        // 1,获取index对应的元素
+                        var title = this.list[index]
+                        // 2,删除index对应的元素
+                        this.list.splice(index,1)
+                        3,在index的前一个位置增加元素
+                        this.list.splice(index+1,0,title)
+
+                    }
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+    <!-- 3,创建一个容器 -->
+    <div id="box">
+        <h2>To do list</h2>
+        <input v-model="inputValue" type="text"  id="txt1" class="inputtxt">
+        <input v-on:click="addFunc" type="button"  value="增加" id="btn1" class="inputbtn">
+            
+        <ul id="list" class="list">
+            <li v-for="(item,index) in list">
+                <span>{{item}}</span>
+                <a @click="upfunc(index)" href="javascript:;" class="up"> ↑ </a>
+                <a @click="downfunc(index)" href="javascript:;" class="down"> ↓ </a>
+                <a @click="deletefunc(index)" href="javascript:;" class="del">删除</a>
+            </li>
+            <!-- <li><span>学习css</span><a href="javascript:;" class="up"> ↑ </a><a href="javascript:;" class="down"> ↓ </a><a href="javascript:;" class="del">删除</a></li>
+            <li><span>学习javascript</span><a href="javascript:;" class="up"> ↑ </a><a href="javascript:;" class="down"> ↓ </a><a href="javascript:;" class="del">删除</a></li> -->
+        </ul>
+    </div>
+</body>
+</html>

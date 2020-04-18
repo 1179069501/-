@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- 导入 -->
+    <script src="./vue.js"></script>
+    <script>
+        window.onload = function(){
+            // 2,初始化
+            var vm = new Vue({
+                el:'#box', // element:元素
+                data:{
+                    msg:"哈哈",
+                    selectValue:'2'
+
+                },
+            })
+        }
+    </script>
+</head>
+<body>
+    <!-- 3,创建一个容器 -->
+    <div id="box">
+        {{msg}}
+        <hr>
+        <input v-model="msg" type="text">
+        <select v-model="selectValue" name="" id="">
+            <option value="0">北京</option>
+            <option value="1">上海</option>
+            <option value="2">武汉</option>
+        </select>
+    </div>
+</body>
+</html>

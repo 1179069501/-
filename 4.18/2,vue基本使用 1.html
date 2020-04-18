@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- 导入 -->
+    <script src="./vue.js"></script>
+    <script>
+        window.onload = function(){
+            // 2,初始化
+            var vm = new Vue({
+                el:'#box', // element:元素
+                data:{
+                    url:'https://img.ivsky.com/img/tupian/co/201910/29/yueliang-015.jpg',
+                    title:'hello',
+                    
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+    <!-- 3,创建一个容器 -->
+    <div id="box">
+        <img v-bind:src="url" v-bind:alt="title">
+        <img :src="url" :alt="title">
+    </div>
+</body>
+</html>

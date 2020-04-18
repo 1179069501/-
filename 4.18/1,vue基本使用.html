@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- 导入 -->
+    <script src="./vue.js"></script>
+    <script>
+        window.onload = function(){
+            // 2,初始化
+            var vm = new Vue({
+                el:'#box',
+                data:{
+                    msg:'hello vue'
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+    3,创建一个容器
+    <div id="box">
+        {{msg}}
+        <h1>{{msg}}</h1>
+        <!-- 错误的用法 -->
+        <!-- <img src="{{msg}}" alt=""> -->
+    </div>
+</body>
+</html>

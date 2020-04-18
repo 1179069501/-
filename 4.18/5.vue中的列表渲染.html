@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- 导入 -->
+    <script src="./vue.js"></script>
+    <script>
+        window.onload = function(){
+            // 2,初始化
+            var vm = new Vue({
+                el:'#box', // element:元素
+                data:{
+                    list:['鹅厂','鸟厂','狼厂','粮厂','马厂','猪场','数字工厂'],
+                    dict:{
+                        'name':'zs',
+                        'age':12
+                    }
+                },
+            })
+        }
+    </script>
+</head>
+<body>
+    <!-- 3,创建一个容器 -->
+    <div id="box">
+        <div>
+            <div v-for='item in list'>
+                {{item}}
+            </div>
+        </div>
+
+        <ul>
+            <li v-for="(item,index) in list">
+                <!-- {{item}} ====> {{index}} -->
+                {{index+1}} === {{item}}
+
+            </li>
+        </ul>
+        <hr>
+        <ul>
+            <li v-for="value in dict">
+                {{value}}
+            </li>
+        </ul>
+        <ul>
+            <li v-for="(value,key,index)in dict">
+                {{value}}===={{key}}==={{index}}
+            </li>
+        </ul>
+    </div>
+</body>
+</html>
